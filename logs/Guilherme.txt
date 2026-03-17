@@ -1,0 +1,11 @@
+Fotógrafo: Guilherme
+Data: 17/03/2026 14:19
+Total no cartão: 221
+
+--- Resultado da selecao ---
+Data: 17/03/2026 14:19
+Pasta analisada: C:\Users\Guilherme\Desktop\Fotografia\Fotos 1
+Total recebido: 221
+Total restante: 110
+Fotos apagadas: 111
+Percentual de aprovacao: 49.77%

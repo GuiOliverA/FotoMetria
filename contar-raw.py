@@ -12,27 +12,27 @@ ARQUIVO_LOG   = LOG_DIR / "contagem_cartao.json"
 
 
 # FASE DE TESTES: pasta fixa para desenvolvimento
-# Em escala real, substituir as linhas 28 e 29 pelo input abaixo:
+# Em escala real, substituir as linhas 27 e 28 pelo input abaixo:
 # -
 #         caminho = input("Cole o caminho da pasta do cartão:\n> ")
 #         PASTA_CARTAO = Path(caminho)
 # -
 # TESTES:
-#         numero = int(input("Qual a numeração da pasta Fotos?\n> "))
-#         PASTA_CARTAO = Path(rf"C:\Users\Guilherme\Desktop\Fotografia\Fotos {numero}")
+#         caminho = int(input("Qual a numeração da pasta Fotos?\n> "))
+#         PASTA_CARTAO = Path(rf"C:\Users\Guilherme\Desktop\Fotografia\Fotos {caminho}")
 
 # --- Solicita a pasta ---
 try:
     while True:
-        numero = int(input("Qual a numeração da pasta Fotos?\n> "))
-        PASTA_CARTAO = Path(rf"C:\Users\Guilherme\Desktop\Fotografia\Fotos {numero}")
+        caminho = int(input("Qual a numeração da pasta Fotos?\n> "))
+        PASTA_CARTAO = Path(rf"C:\Users\Guilherme\Desktop\Fotografia\Fotos {caminho}")
         
         if PASTA_CARTAO.exists():
             print(cores.verde(f"Pasta encontrada: {PASTA_CARTAO}"))
             sleep(2)
             break
         else:
-            print(cores.vermelho(f"Pasta 'Fotos {numero}' não encontrada..."))
+            print(cores.vermelho(f"Pasta 'Fotos {caminho}' não encontrada..."))
 
 except ValueError:
     print(cores.vermelho("Entrada inválida. Por favor, digite um número inteiro (1,2,3...)."))
