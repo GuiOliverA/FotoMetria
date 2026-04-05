@@ -5,9 +5,61 @@ from datetime import datetime
 from time import sleep
 from interface import cores
 
-EXTENSOES_RAW = {'.cr2', '.cr3', '.arw', '.jpeg', '.jpg'}
-LOG_DIR = Path(__file__).parent / "logs"
-ARQUIVO_LOG = LOG_DIR / "contagem_cartao.json"
+EXTENSOES_RAW      = {'.cr2', '.cr3', '.arw', '.jpeg', '.jpg'}
+LOG_DIR            = Path(__file__).parent / "logs"
+ARQUIVO_LOG        = LOG_DIR / "contagem_cartao.json"
+ARQUIVO_FOTOGRAFOS = LOG_DIR / "fotografos.json"
+ARQUIVO_EQUIPE     = LOG_DIR / "equipe_dia.json"
+
+
+def _carregar_json(caminho: Path, padrao):
+    if not caminho.exists():
+        return padrao
+    try:
+        with open(caminho, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return padrao
+
+
+def _selecionar_equipe_e_fotografo() -> tuple[list, str]:
+    dados_equipe = _carregar_json(ARQUIVO_EQUIPE, {})
+    equipe_dia = dados_equipe.get("equipe", []) if isinstance(dados_equipe, dict) else []
+    fotografos = _carregar_json(ARQUIVO_FOTOGRAFOS, [])
+
+    equipe_dia = [str(nome).strip().title() for nome in equipe_dia if str(nome).strip()]
+    fotografos = [str(nome).strip().title() for nome in fotografos if str(nome).strip()]
+
+    print(cores.negrito_amarelo("\n=== SELEÇÃO DE FOTÓGRAFO ==="))
+
+    if equipe_dia:
+        print(cores.verde("Equipe do dia carregada com sucesso:"))
+        for i, nome in enumerate(equipe_dia, 1):
+            print(cores.azul(f"  {i}. {nome}"))
+
+        print(cores.amarelo("\nOpção manual (sem número): digite M"))
+
+        while True:
+            entrada = input("\nEscolha o número do fotógrafo ou digite M: ").strip()
+            if entrada.lower() == 'm':
+                nome = input("Nome do fotógrafo: ").strip().title() or "Sem Identificação"
+                return [nome], nome
+
+            if entrada.isdigit():
+                idx = int(entrada) - 1
+                if 0 <= idx < len(equipe_dia):
+                    return equipe_dia, equipe_dia[idx]
+
+            print(cores.vermelho("Entrada inválida. Escolha um número da equipe ou digite M."))
+
+    print(cores.vermelho("\nNenhuma equipe do dia foi encontrada."))
+    print(cores.amarelo("Cadastre a equipe antes em 'fotografos.py' para agilizar a seleção."))
+    if fotografos:
+        print(cores.azul(f"Fotógrafos cadastrados no sistema: {', '.join(fotografos)}"))
+    print(cores.amarelo("\nCadastro manual de fotógrafo:"))
+
+    nome = input("Nome do fotógrafo: ").strip().title() or "Sem Identificação"
+    return [nome], nome
 
 
 def obter_pasta() -> Path:
@@ -33,7 +85,20 @@ with open(ARQUIVO_LOG, 'r', encoding='utf-8') as f:
 
 total_recebidas = int(dados.get('total_cartao', 0))
 fotografo = dados.get('fotografo', 'sem identificação')
+equipe_dia = dados.get('equipe', [])
 data_contagem = dados.get('data', 'data desconhecida')
+
+if not isinstance(equipe_dia, list):
+    equipe_dia = []
+
+if equipe_dia:
+    print(cores.amarelo(f"Equipe do dia: {', '.join(equipe_dia)}"))
+    resposta = input("Manter essa equipe/fotógrafo? [S/N]: ").strip().upper()
+    resposta = resposta[0] if resposta else 'S'
+    if resposta == 'N':
+        equipe_dia, fotografo = _selecionar_equipe_e_fotografo()
+else:
+    equipe_dia, fotografo = _selecionar_equipe_e_fotografo()
 
 print(cores.amarelo(f"Fotografo   : {fotografo}"))
 print(cores.amarelo(f"Contagem em : {data_contagem}"))
@@ -76,14 +141,31 @@ if fotos_apagadas < 0:
     ))
 
 # --- Salva no TXT do fotógrafo em append ---
-nome_txt = fotografo.replace("/", "-").replace("\\", "-")
-arquivo_txt = LOG_DIR / f"{nome_txt}.txt"
+dados['fotografo'] = fotografo
+dados['equipe'] = equipe_dia
 
 LOG_DIR.mkdir(parents=True, exist_ok=True)
+with open(ARQUIVO_LOG, 'w', encoding='utf-8') as f:
+    json.dump(dados, f, ensure_ascii=False, indent=2)
+
+nome_txt = fotografo.replace("/", "-").replace("\\", "-")
+arquivo_txt = LOG_DIR / f"{nome_txt}.txt"
+primeira_escrita = not arquivo_txt.exists()
+
 with open(arquivo_txt, 'a', encoding='utf-8') as f:
-    f.write("\n")
+    if primeira_escrita:
+        # Caso contar-raw.py não tenha sido executado antes, garante o cabeçalho
+        f.write(f"Fotógrafo: {fotografo}\n")
+        if equipe_dia:
+            f.write(f"Equipe do dia: {', '.join(equipe_dia)}\n")
+        f.write(f"Data da escala: {datetime.now().strftime('%d/%m/%Y')}\n")
+        f.write("=" * 40 + "\n")
+    else:
+        f.write("\n")
     f.write("--- Resultado da seleção ---\n")
-    f.write(f"Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n")
+    f.write(f"Data/Hora: {datetime.now().strftime('%d/%m/%Y %H:%M')}\n")
+    if equipe_dia:
+        f.write(f"Equipe do dia: {', '.join(equipe_dia)}\n")
     f.write(f"Pasta analisada: {PASTA_FOTOS}\n")
     f.write(f"Total recebido: {total_recebidas}\n")
     f.write(f"Total restante: {total_restantes}\n")

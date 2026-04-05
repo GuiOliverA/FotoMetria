@@ -1,0 +1,26 @@
+Fotógrafo: Testando
+Equipe do dia: Testando
+Data da escala: 05/04/2026
+========================================
+--- Contagem do cartão ---
+Data/Hora: 05/04/2026 16:46
+Equipe do dia: Testando
+Total no cartão: 413
+
+--- Resultado da seleção ---
+Data/Hora: 05/04/2026 16:47
+Equipe do dia: Testando
+Pasta analisada: C:\Users\Guilherme\Desktop\Fotografia\Fotos 1
+Total recebido: 413
+Total restante: 413
+Fotos apagadas: 0
+Percentual de aprovação: 100.00%
+
+--- Resultado da seleção ---
+Data/Hora: 05/04/2026 16:47
+Equipe do dia: Testando
+Pasta analisada: C:\Users\Guilherme\Desktop\Fotografia\Fotos 1
+Total recebido: 413
+Total restante: 383
+Fotos apagadas: 30
+Percentual de aprovação: 92.74%
